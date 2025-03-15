@@ -2,32 +2,71 @@ package ru.simsonic.experiments.object;
 
 import java.io.IOException;
 
-@SuppressWarnings({ "FieldMayBeFinal", "SynchronizeOnNonFinalField" })
+@SuppressWarnings({"FieldMayBeFinal", "SynchronizeOnNonFinalField"})
 public class MyClass implements MyInterface {
 
     private static Object lock1 = new Object();
     private final Object lock2 = "string-type-lock";
 
-    public void superSimpleMethod() {
-        System.out.println("superSimpleMethod");
+    @Override
+    public void nonSynchronizedMethod() {
+        System.out.println("nonSynchronizedMethod");
     }
 
-    public void simpleMethod() {
-        String simpleMethod = "simpleMethod";
-        System.out.println(simpleMethod);
+    @Override
+    public void nonSynchronizedThrowingMethod() {
+        System.out.println("nonSynchronizedThrowingMethod");
+        throw new RuntimeException("nonSynchronizedThrowingMethod");
     }
 
-    public synchronized void superSimpleSynchronizedMethod() {
-        System.out.println("superSimpleSynchronizedMethod");
+    @Override
+    public void nonSynchronizedMethodWithVariable() {
+        String variable = "nonSynchronizedMethodWithVariables";
+        System.out.println(variable);
     }
 
-    public synchronized void simpleSynchronizedMethod() {
-        String simpleSynchronizedMethod = "simpleSynchronizedMethod";
-        System.out.println(simpleSynchronizedMethod);
+    @Override
+    public synchronized void synchronizedMethod() {
+        System.out.println("synchronizedMethod");
     }
 
-    public synchronized void testingMethod1() {
-        throw new IllegalArgumentException("ABC");
+    @Override
+    public synchronized void synchronizedMethodWithVariable() {
+        String variable = "synchronizedMethodWithVariable";
+        System.out.println(variable);
+    }
+
+    @Override
+    public synchronized void synchronizedThrowingMethod() {
+        throw new IllegalArgumentException("synchronizedThrowingMethod");
+    }
+
+    @Override
+    public void synchronizedBlockOnThis() {
+        synchronized (this) {
+            System.out.println("synchronizedBlockOnThis");
+        }
+    }
+
+    @Override
+    public void synchronizedBlockOnObject() {
+        synchronized (lock1) {
+            System.out.println("synchronizedBlockOnObject");
+        }
+    }
+
+    @Override
+    public synchronized void synchronizedMethodAndBlockOnThis() {
+        synchronized (this) {
+            System.out.println("synchronizedMethodAndBlockOnThis");
+        }
+    }
+
+    @Override
+    public synchronized void synchronizedMethodAndBlockOnObject() {
+        synchronized (lock1) {
+            System.out.println("synchronizedMethodAndBlockOnObject");
+        }
     }
 
     @Override
@@ -76,6 +115,7 @@ public class MyClass implements MyInterface {
         }
     }
 
+    @Override
     public synchronized void testingMethod_FREEZE() {
         try {
             for (int i = 0; i < 10; i += 1) {

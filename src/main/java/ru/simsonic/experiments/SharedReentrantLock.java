@@ -14,11 +14,11 @@ public final class SharedReentrantLock extends ReentrantLock {
     private SharedReentrantLock(Object originalMonitoredObject) {
         super(true);
         this.originalMonitoredObject = originalMonitoredObject;
-        System.out.println("lock init()!");
+        // System.out.println("lock init()!");
     }
 
     public static Lock lock(Object object) {
-        System.out.println("static lock!");
+        // System.out.println("static lock!");
         return OBJECT_TO_REENTRANT_LOCK_MAP.compute(
                 object,
                 (k, v) -> {
@@ -30,13 +30,13 @@ public final class SharedReentrantLock extends ReentrantLock {
     }
 
     public static Map<Object, ReentrantLock> getDebugMap() {
-        System.out.println("getDebugMap");
+        // System.out.println("getDebugMap");
         return Map.copyOf(OBJECT_TO_REENTRANT_LOCK_MAP);
     }
 
     @Override
     public void unlock() {
-        System.out.println("unlock");
+        // System.out.println("unlock");
         OBJECT_TO_REENTRANT_LOCK_MAP.computeIfPresent(
                 originalMonitoredObject,
                 SharedReentrantLock::tryRemove
