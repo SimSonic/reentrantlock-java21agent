@@ -5,8 +5,24 @@ import java.io.IOException;
 @SuppressWarnings({"FieldMayBeFinal", "SynchronizeOnNonFinalField"})
 public class MyClass implements MyInterface {
 
-    private static Object lock1 = new Object();
-    private final Object lock2 = "string-type-lock";
+    private static Object staticLock = new Object();
+    private final Object fieldLock = "string-type-lock-is-just-for-fun";
+
+    public static synchronized void staticSynchronizedMethod() {
+        System.out.println("staticSynchronizedMethod");
+    }
+
+    public static void staticSynchronizedBlock() {
+        synchronized (staticLock) {
+            System.out.println("staticSynchronizedBlock");
+        }
+    }
+
+    @Override
+    public void invokeStaticMethods() {
+        MyClass.staticSynchronizedMethod();
+        MyClass.staticSynchronizedBlock();
+    }
 
     @Override
     public void nonSynchronizedMethod() {
@@ -50,7 +66,7 @@ public class MyClass implements MyInterface {
 
     @Override
     public void synchronizedBlockOnObject() {
-        synchronized (lock1) {
+        synchronized (staticLock) {
             System.out.println("synchronizedBlockOnObject");
         }
     }
@@ -64,23 +80,39 @@ public class MyClass implements MyInterface {
 
     @Override
     public synchronized void synchronizedMethodAndBlockOnObject() {
-        synchronized (lock1) {
+        synchronized (staticLock) {
             System.out.println("synchronizedMethodAndBlockOnObject");
         }
     }
 
     @Override
-    public synchronized void testingMethod() {
+    public synchronized void synchronizedThrowingMethodWithBlocks() {
+        synchronized (this) {
+            synchronized (staticLock) {
+                throw new IllegalArgumentException("synchronizedThrowingMethod");
+            }
+        }
+    }
+
+    @Override
+    public synchronized void synchronizedConsumer(Runnable runnable) {
+        runnable.run();
+    }
+
+    // Дальше древний код!
+
+    @Override
+    public synchronized void oldTestingMethod() {
         try {
             for (int i = 0; i < 10; i += 1) {
-                synchronized (lock1) {
+                synchronized (staticLock) {
                     try {
-                        this.ioMethod();
+                        this.privateNonSynchronizedThrowingMethod();
                     } catch (IOException ex) {
                         // Проглотили.
                     }
                     synchronized (this) {
-                        synchronized (lock2) {
+                        synchronized (fieldLock) {
                             System.out.println("simpleMethodWithBlock");
                             privateMethod();
                         }
@@ -88,7 +120,7 @@ public class MyClass implements MyInterface {
                 }
             }
         } catch (IllegalArgumentException ex) {
-            synchronized (lock1) {
+            synchronized (staticLock) {
                 System.out.println("simpleMethodWithBlock " + ex.getMessage());
                 throw new IllegalCallerException("Value of X = 0", ex);
             }
@@ -99,7 +131,7 @@ public class MyClass implements MyInterface {
         }
     }
 
-    private void ioMethod() throws IOException {
+    private void privateNonSynchronizedThrowingMethod() throws IOException {
         throw new IOException("I/O is bad...");
     }
 
@@ -119,9 +151,9 @@ public class MyClass implements MyInterface {
     public synchronized void testingMethod_FREEZE() {
         try {
             for (int i = 0; i < 10; i += 1) {
-                synchronized (lock1) {
+                synchronized (staticLock) {
                     synchronized (this) {
-                        synchronized (lock2) {
+                        synchronized (fieldLock) {
                             System.out.println("simpleMethodWithBlock");
                             throw new IllegalArgumentException("abc");
                         }

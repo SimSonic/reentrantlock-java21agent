@@ -20,6 +20,9 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
         <lombok.version>1.18.36</lombok.version>
+        <asm.version>9.7.1</asm.version>
+
+        <junit.version>5.10.0</junit.version>
     </properties>
 
     <dependencies>
@@ -33,25 +36,25 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>9.7</version>
+            <version>${asm.version}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-commons</artifactId>
-            <version>9.7</version>
+            <version>${asm.version}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.10.0</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.10.0</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
