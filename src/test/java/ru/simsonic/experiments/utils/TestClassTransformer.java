@@ -14,17 +14,13 @@ public class TestClassTransformer {
         String classSimpleName = clazz.getSimpleName();
 
         byte[] originalClassFileBuffer = getClassBytes(clazz);
-        String file1 = "src/test/resources/%s-original.class".formatted(classSimpleName);
-        saveBytes(file1, originalClassFileBuffer);
-        System.out.println("Saved file: " + file1);
 
         byte[] transformedClassFileBuffer = SynchronizedToReentrantLockClassFileTransformer.transformClass(
                 ClassLoader.getSystemClassLoader(),
                 originalClassFileBuffer
         );
-        String file2 = "src/test/resources/%s-transformed.class".formatted(classSimpleName);
-        saveBytes(file2, transformedClassFileBuffer);
-        System.out.println("Saved file: " + file2);
+
+        saveTestResourcesForManualComparison(classSimpleName, originalClassFileBuffer, transformedClassFileBuffer);
 
         return transformedClassFileBuffer;
     }
@@ -35,6 +31,16 @@ public class TestClassTransformer {
         try (InputStream is = clazz.getClassLoader().getResourceAsStream(classPathResourceName)) {
             return Objects.requireNonNull(is).readAllBytes();
         }
+    }
+
+    private static void saveTestResourcesForManualComparison(String classSimpleName, byte[] originalClassFileBuffer, byte[] transformedClassFileBuffer) {
+        String file1 = "src/test/resources/%s-original.class".formatted(classSimpleName);
+        saveBytes(file1, originalClassFileBuffer);
+        System.out.println("Saved original file: " + file1);
+
+        String file2 = "src/test/resources/%s-transformed.class".formatted(classSimpleName);
+        saveBytes(file2, transformedClassFileBuffer);
+        System.out.println("Saved transformed file: " + file2);
     }
 
     @SneakyThrows
