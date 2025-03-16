@@ -1,5 +1,6 @@
 package ru.simsonic.experiments;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
@@ -7,7 +8,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public final class SharedReentrantLock extends ReentrantLock {
 
-    private static final Map<KeyWrapper, ReentrantLock> OBJECT_TO_REENTRANT_LOCK_MAP = new ConcurrentHashMap<>();
+    private static final Map<KeyWrapper, ReentrantLock> OBJECT_TO_REENTRANT_LOCK_MAP = new HashMap<>();
+    private static final Lock MAP_LOCK = new ReentrantLock();
 
     private static class KeyWrapper {
 
@@ -40,17 +42,22 @@ public final class SharedReentrantLock extends ReentrantLock {
 
     public static Lock lock(Object object) {
         // System.out.printf("[%s] Locking on %s.%n", Thread.currentThread().getName(), object);
-        Lock lock = OBJECT_TO_REENTRANT_LOCK_MAP.computeIfAbsent(
-                new KeyWrapper(object),
-                k -> {
-                    ReentrantLock result = new SharedReentrantLock(k);
-                    result.lock();
-                    return result;
-                }
-        );
+        MAP_LOCK.lock();
+        try {
+            Lock lock = OBJECT_TO_REENTRANT_LOCK_MAP.computeIfAbsent(
+                    new KeyWrapper(object),
+                    k -> {
+                        ReentrantLock result = new SharedReentrantLock(k);
+                        result.lock();
+                        return result;
+                    }
+            );
 
-        System.out.printf("[%s] Lock acquired on %s.%n", Thread.currentThread().getName(), object);
-        return lock;
+            System.out.printf("[%s] Lock acquired on %s.%n", Thread.currentThread().getName(), object);
+            return lock;
+        } finally {
+            MAP_LOCK.unlock();
+        }
     }
 
     public static Map<Object, ReentrantLock> getDebugMap() {
@@ -61,14 +68,19 @@ public final class SharedReentrantLock extends ReentrantLock {
     @Override
     public void unlock() {
         System.out.printf("[%s] Unlocking on %s...%n", Thread.currentThread().getName(), originalMonitoredObjectKey.key);
-        Lock currentState = OBJECT_TO_REENTRANT_LOCK_MAP.computeIfPresent(
-                originalMonitoredObjectKey,
-                SharedReentrantLock::tryRemove
-        );
-        if (currentState == null) {
-            System.out.printf("[%s] Removing lock on %s from map.%n", Thread.currentThread().getName(), originalMonitoredObjectKey.key);
+        MAP_LOCK.lock();
+        try {
+            Lock currentState = OBJECT_TO_REENTRANT_LOCK_MAP.computeIfPresent(
+                    originalMonitoredObjectKey,
+                    SharedReentrantLock::tryRemove
+            );
+            if (currentState == null) {
+                System.out.printf("[%s] Removing lock on %s from map.%n", Thread.currentThread().getName(), originalMonitoredObjectKey.key);
+            }
+            super.unlock();
+        } finally {
+            MAP_LOCK.unlock();
         }
-        super.unlock();
     }
 
     private static ReentrantLock tryRemove(KeyWrapper object, ReentrantLock lock) {
