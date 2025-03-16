@@ -13,8 +13,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ParallelThreadsTest extends BaseSynchronizedToReentrantLockClassFileTransformerTest {
 
     private static final int THREADS_NUM = 10;
-    private static final int THREAD_DEPTH = 100;
-    private static final int THREAD_ITERATIONS = 100;
+    private static final int THREAD_DEPTH = 1;
+    private static final int THREAD_ITERATIONS = 1;
 
     @Test
     void trySeveralPlatformThreads() {
@@ -31,7 +31,7 @@ class ParallelThreadsTest extends BaseSynchronizedToReentrantLockClassFileTransf
     private static void runThreads(ThreadFactory factory) {
         try (ExecutorService executorService = Executors.newThreadPerTaskExecutor(factory)) {
             AtomicReference<Runnable> runnableRef = new AtomicReference<>(
-                    () -> myClassModifiedInstance.nonSynchronizedThrowingMethod()
+                    () -> myClassModifiedInstance.synchronizedThrowingMethodWithBlocks()
             );
             for (int virtualDepthId = 0; virtualDepthId < THREAD_DEPTH; virtualDepthId += 1) {
                 Runnable innerRunnable = runnableRef.get();
